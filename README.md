@@ -217,6 +217,157 @@ NAME                                                 WEBHOOKS   AGE
 sriov-operator-webhook-config                        1          2d5h
 vwb.performance.openshift.io-f26c9                   1          3d2h
 ```
+### How to use
+After the operator gets installed, We have the following CRS:
+``
+SriovNetworkNodeState
+SriovNetwork
+SriovNetworkNodePolicy
+``
+- SriovNetworkNodeState CRS are readonly and provide information about SR-IOV capable devices in the cluster. 
+- List details of capable devices from your server that discovery by OCP SRIOV operator
+- 
+```diff
++ oc get sriovnetworknodestates.sriovnetwork.openshift.io -n openshift-sriov-network-operator  -o yaml
+```
+```yaml
+apiVersion: v1
+items:
+- apiVersion: sriovnetwork.openshift.io/v1
+  kind: SriovNetworkNodeState
+  metadata:
+    creationTimestamp: "2021-11-30T16:20:31Z"
+    generation: 3
+    name: cnfdf06.ran.dfwt5g.lab
+    namespace: openshift-sriov-network-operator
+    ownerReferences:
+    - apiVersion: sriovnetwork.openshift.io/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: SriovNetworkNodePolicy
+      name: default
+      uid: 15766c2c-3eda-45bd-83aa-0e08efd3fe46
+    resourceVersion: "3083675"
+    uid: 7d6d1903-380a-4769-aeda-7a4007f54fe0
+  spec:
+    dpConfigVersion: "2471659"
+    interfaces:
+    - linkType: eth
+      name: ens5f0
+      numVfs: 6
+      pciAddress: 0000:86:00.0
+      vfGroups:
+      - deviceType: netdevice
+        policyName: sriov-network-node-policy
+        resourceName: vuy_sriovnic
+        vfRange: 0-5
+  status:
+    interfaces:
+    - deviceID: "1015"
+      driver: mlx5_core
+      linkSpeed: 25000 Mb/s
+      linkType: ETH
+      mac: 0c:42:a1:bc:68:1c
+      mtu: 1500
+      name: eno1
+      pciAddress: "0000:19:00.0"
+      vendor: 15b3
+    - deviceID: "1015"
+      driver: mlx5_core
+      linkSpeed: 25000 Mb/s
+      linkType: ETH
+      mac: 0c:42:a1:bc:68:1d
+      mtu: 1500
+      name: eno2
+      pciAddress: "0000:19:00.1"
+      vendor: 15b3
+    - Vfs:
+      - deviceID: 154c
+        driver: iavf
+        mac: 2a:fb:49:58:65:35
+        mtu: 1500
+        name: ens5f0v0
+        pciAddress: 0000:86:02.0
+        vendor: "8086"
+        vfID: 0
+      - deviceID: 154c
+        driver: iavf
+        mac: fa:d6:76:f8:cf:bb
+        mtu: 1500
+        name: ens5f0v1
+        pciAddress: 0000:86:02.1
+        vendor: "8086"
+        vfID: 1
+      - deviceID: 154c
+        driver: iavf
+        pciAddress: 0000:86:02.2
+        vendor: "8086"
+        vfID: 2
+      - deviceID: 154c
+        driver: iavf
+        pciAddress: 0000:86:02.3
+        vendor: "8086"
+        vfID: 3
+      - deviceID: 154c
+        driver: iavf
+        mac: 32:45:ab:d9:2c:87
+        mtu: 1500
+        name: ens5f0v4
+        pciAddress: 0000:86:02.4
+        vendor: "8086"
+        vfID: 4
+      - deviceID: 154c
+        driver: iavf
+        mac: 1e:55:b3:77:fe:9f
+        mtu: 1500
+        name: ens5f0v5
+        pciAddress: 0000:86:02.5
+        vendor: "8086"
+        vfID: 5
+      deviceID: 158b
+      driver: i40e
+      linkSpeed: 25000 Mb/s
+      linkType: ETH
+      mac: 40:a6:b7:2b:1f:40
+      mtu: 1500
+      name: ens5f0
+      numVfs: 6
+      pciAddress: 0000:86:00.0
+      totalvfs: 64
+      vendor: "8086"
+    - deviceID: 158b
+      driver: i40e
+      linkSpeed: 25000 Mb/s
+      linkType: ETH
+      mac: 40:a6:b7:2b:1f:41
+      mtu: 1500
+      name: ens5f1
+      pciAddress: 0000:86:00.1
+      totalvfs: 64
+      vendor: "8086"
+    - deviceID: 158b
+      driver: i40e
+      linkSpeed: -1 Mb/s
+      linkType: ETH
+      mac: 40:a6:b7:2b:24:80
+      mtu: 1500
+      name: ens7f0
+      pciAddress: 0000:88:00.0
+      totalvfs: 64
+      vendor: "8086"
+    - deviceID: 158b
+      driver: i40e
+      linkSpeed: -1 Mb/s
+      linkType: ETH
+      mac: 40:a6:b7:2b:24:81
+      mtu: 1500
+      name: ens7f1
+      pciAddress: 0000:88:00.1
+      totalvfs: 64
+      vendor: "8086"
+```
+
+
 ##https://access.redhat.com/solutions/3875421
 
 ##https://docs.openshift.com/container-platform/4.7/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html
