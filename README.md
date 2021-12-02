@@ -149,7 +149,7 @@ spec:
     topologyPolicy: single-numa-node
   realTimeKernel:
     #set it as true for 4.9.6+ to enable the rt kernel
-    enabled: false
+    enabled: true
 ```
 ```bash
 oc create -f pao/pp.yaml
