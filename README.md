@@ -22,8 +22,8 @@ lspci|grep Ether
 [PAO](https://docs.openshift.com/container-platform/4.9/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html#installing-the-performance-addon-operator_cnf-master) or using files is already prepared here.
 
 ### Get OpenShift Channel version 
-```bash
-oc version -o yaml | grep openshiftVersion |grep -o '[0-9]*[.][0-9]*' | head -1)
+```diff
++ oc version -o yaml | grep openshiftVersion |grep -o '[0-9]*[.][0-9]*' | head -1)
 "4.9"
 ```
 ### Update pao/install.yml
@@ -56,8 +56,8 @@ spec:
   source: redhat-operators 
   sourceNamespace: openshift-marketplace
 ```
-```bash
-oc create -f pao/install.yml
+```diff
++ oc create -f pao/install.yml
 ```
 ## Expected Output:
 ```bash
@@ -65,17 +65,18 @@ namespace/openshift-performance-addon created
 operatorgroup.operators.coreos.com/openshift-performance-addon-operatorgroup created
 subscription.operators.coreos.com/performance-addon-operator-subscription created
 ```
-```python
-oc get csv
+```diff
++ oc get csv
 NAME                                DISPLAY                      VERSION   REPLACES   PHASE
 performance-addon-operator.v4.9.2   Performance Addon Operator   4.9.2                Succeeded
 ```
-```bash
-oc get po -n openshift-performance-addon-operator -o wide
+```diff
++ oc get po -n openshift-performance-addon-operator -o wide
 NAME                                    READY   STATUS    RESTARTS   AGE   
 performance-operator-6ff7b477d9-6p7mn   1/1     Running   0          29h  
-
-oc get csv|grep performance
+```
+```diff
++ oc get csv|grep performance
 performance-addon-operator.v4.9.2   Performance Addon Operator   4.9.2                Succeeded
 ```
 ## How to use/prepare Performance Profile
@@ -87,8 +88,8 @@ The full list of attributes handled by the operator can be see [here](https://gi
 
 Label the workers that need specific configuration. We will use the commonly used label worker-cnf as hard-coded on files then update role and labels from files accordingly. But you can label to any name e.g. worker-hiperf= 
 - label your worker node to worker-cnf=
-```
-oc label node your_worker node-role.kubernetes.io/worker-cnf='' --overwrite
+```diff
++ oc label node your_worker node-role.kubernetes.io/worker-cnf='' --overwrite
 ```
 - Create machine config pools that matches previously set labels. As previous task, it’s admin’s responsability to create those assets to match its platforms
 ```yaml
@@ -111,11 +112,11 @@ spec:
     matchLabels:
       node-role.kubernetes.io/worker-cnf: ""
 ```
+```diff
++ oc create -f pao/mcp.yaml
 ```
-oc create -f pao/mcp.yaml
-```
-```bash
-oc get mcp
+```diff
++ oc get mcp
 NAME         CONFIG                                                 UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
 worker-cnf   rendered-worker-cnf-06a415a499dedcb8755706edcfed1d9a   True      False      False      0              0                   0                     0                       2d23h
 ````
@@ -151,8 +152,8 @@ spec:
     #set it as true for 4.9.6+ to enable the rt kernel
     enabled: true
 ```
-```bash
-oc create -f pao/pp.yaml
+```diff
++ oc create -f pao/pp.yaml
 ```
 
 ## Installing the SR-IOV Network Operator Using CLI
@@ -187,19 +188,20 @@ spec:
   sourceNamespace: openshift-marketplace
 ```
 
-```bash
-oc create -f sriov/install.yaml
+```diff
++ oc create -f sriov/install.yaml
 ```
-```bash
-oc get po -n openshift-sriov-network-operator
+```diff
++ oc get po -n openshift-sriov-network-operator
 NAME                                      READY   STATUS    RESTARTS       AGE
 network-resources-injector-b4nvb          1/1     Running   0              2d5h
 operator-webhook-pdt8c                    1/1     Running   0              2d5h
 sriov-device-plugin-sgtcg                 1/1     Running   0              122m
 sriov-network-config-daemon-vfwbm         3/3     Running   0              2d5h
 sriov-network-operator-75dd9b8576-vc4lz   1/1     Running   0              2d5h
-
-oc get csv -n openshift-sriov-network-operator
+```
+```diff
++ oc get csv -n openshift-sriov-network-operator
 NAME                                        DISPLAY                      VERSION              REPLACES   PHASE
 performance-addon-operator.v4.9.2           Performance Addon Operator   4.9.2                           Succeeded
 sriov-network-operator.4.9.0-202111151318   SR-IOV Network Operator      4.9.0-202111151318              Succeeded
@@ -226,7 +228,6 @@ SriovNetworkNodePolicy
 ``
 - SriovNetworkNodeState CRS are readonly and provide information about SR-IOV capable devices in the cluster. 
 - List details of capable devices from your server that discovery by OCP SRIOV operator
-- 
 ```diff
 + oc get sriovnetworknodestates.sriovnetwork.openshift.io -n openshift-sriov-network-operator  -o yaml
 ```
@@ -365,6 +366,46 @@ items:
       pciAddress: 0000:88:00.1
       totalvfs: 64
       vendor: "8086"
+```
+### Create SriovNetworkNodePolicy CR,
+- Create Sriov Network Node Policy
+```yaml
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetworkNodePolicy
+metadata:
+  name: sriov-network-node-policy
+  namespace: openshift-sriov-network-operator
+spec:
+  deviceType: netdevice
+  isRdma: false
+  nicSelector:
+    pfNames:
+      - ens5f0
+  nodeSelector:
+    node-role.kubernetes.io/worker-cnf: ""
+  numVfs: 6
+  resourceName: vuy_sriovnic
+```
+- Check SRIOV VF
+
+```diff
++ ip a l|grep ens
+2: ens5f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+3: ens5f1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+100: ens5f0v0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+101: ens5f0v1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+104: ens5f0v2: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+105: ens5f0v3: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+106: ens5f0v4: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+107: ens5f0v5: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+
++ lspci|grep Virtual
+86:02.0 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.1 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.2 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.3 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.4 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.5 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
 ```
 
 
