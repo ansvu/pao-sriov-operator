@@ -386,8 +386,11 @@ spec:
   numVfs: 6
   resourceName: vuy_sriovnic
 ```
-- Check SRIOV VF
+```diff
++ oc create sriov/sriov-nnp.yaml
+```
 
+- Check SRIOV VF
 ```diff
 + ip a l|grep ens
 2: ens5f0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
