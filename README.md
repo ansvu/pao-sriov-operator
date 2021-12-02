@@ -84,7 +84,7 @@ The performance addon operator deploys a custom resource (CR) named performancep
 
 The full list of attributes handled by the operator can be see [here](https://github.com/openshift-kni/performance-addon-operators/blob/master/api/v2/performanceprofile_types.go)
 
-## The setup goes as follows
+## The setup goes as following
 
 Label the workers that need specific configuration. We will use the commonly used label worker-cnf as hard-coded on files then update role and labels from files accordingly. But you can label to any name e.g. worker-hiperf= 
 - label your worker node to worker-cnf=
