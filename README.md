@@ -78,7 +78,7 @@ performance-operator-6ff7b477d9-6p7mn   1/1     Running   0          29h
 oc get csv|grep performance
 performance-addon-operator.v4.9.2   Performance Addon Operator   4.9.2                Succeeded
 ```
-## How to use/prepare PerformanceProfile
+## How to use/prepare Performance Profile
 The performance addon operator deploys a custom resource (CR) named performanceprofile that we can use to configure the nodes. Creating such profile will trigger the creation of underlying objects such as machineconfigs or tuned objects, with handling done by more lowlevel operators.
 
 The full list of attributes handled by the operator can be see [here](https://github.com/openshift-kni/performance-addon-operators/blob/master/api/v2/performanceprofile_types.go)
@@ -154,5 +154,71 @@ spec:
 ```bash
 oc create -f pao/pp.yaml
 ```
+
+## Installing the SR-IOV Network Operator Using CLI
+
+- To create the openshift-sriov-network-operator namespace, OperatorGroup CR and To create a Subscription CR for the SR-IOV Network Operator
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: openshift-sriov-network-operator
+  annotations:
+    workload.openshift.io/allowed: management
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: sriov-network-operators
+  namespace: openshift-sriov-network-operator
+spec:
+  targetNamespaces:
+  - openshift-sriov-network-operators
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: sriov-network-operator-subscription
+  namespace: openshift-sriov-network-operator
+spec:
+  channel: "4.9"
+  name: sriov-network-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+```
+
+```bash
+oc create -f sriov/install.yaml
+```
+```bash
+oc get po -n openshift-sriov-network-operator
+NAME                                      READY   STATUS    RESTARTS       AGE
+network-resources-injector-b4nvb          1/1     Running   0              2d5h
+operator-webhook-pdt8c                    1/1     Running   0              2d5h
+sriov-device-plugin-sgtcg                 1/1     Running   0              122m
+sriov-network-config-daemon-vfwbm         3/3     Running   0              2d5h
+sriov-network-operator-75dd9b8576-vc4lz   1/1     Running   0              2d5h
+
+oc get csv -n openshift-sriov-network-operator
+NAME                                        DISPLAY                      VERSION              REPLACES   PHASE
+performance-addon-operator.v4.9.2           Performance Addon Operator   4.9.2                           Succeeded
+sriov-network-operator.4.9.0-202111151318   SR-IOV Network Operator      4.9.0-202111151318              Succeeded
+```
+```diff
++ oc get mutatingwebhookconfigurations
+NAME                                WEBHOOKS   AGE
+network-resources-injector-config   1          2d5h
+sriov-operator-webhook-config       1          2d5h
+```
+
+```diff
++ oc get validatingwebhookconfigurations
+NAME                                                 WEBHOOKS   AGE
+sriov-operator-webhook-config                        1          2d5h
+vwb.performance.openshift.io-f26c9                   1          3d2h
+```
+##https://access.redhat.com/solutions/3875421
+
+##https://docs.openshift.com/container-platform/4.7/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html
 
 ## License
