@@ -416,4 +416,8 @@ spec:
 
 ##https://docs.openshift.com/container-platform/4.7/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html
 
+##https://access.redhat.com/documentation/en-us/openshift_container_platform/4.9/html/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes
+
+##https://infohub.delltechnologies.com/l/deployment-guide-dell-technologies-red-hat-openshift-reference-architecture-for-telecom-1/performance-profile-deployment-for-low-latency-3
+
 ## License
