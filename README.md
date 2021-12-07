@@ -386,6 +386,15 @@ spec:
   numVfs: 6
   resourceName: vuy_sriovnic
 ```
+- deviceType can be netdevice or vfio-pci, it depends on your physical NIC capabilities.
+- resourceName can be named anything you like
+- pfNames is the physical NIC interface name from SriovNetworkNodeState output
+- numVfs define # base on your application or test pod need.
+- nodeSelecor must match with your worker role name e.g. worker-cnf
+- isRdma, some NICs do not have this feature supported, enabled it only if NIC is supported. e.g. Check BIOS
+
+**Note:** when I applied this first time, the worker node got reboot!
+
 ```diff
 + oc create sriov/sriov-nnp.yaml
 ```
@@ -411,6 +420,36 @@ spec:
 86:02.5 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
 ```
 
+### Creating test pods
+
+- Creating Network Attach Definition
+-
+```yaml
+apiVersion: sriovnetwork.openshift.io/v1
+kind: SriovNetwork
+metadata:
+  name: sriov-network
+  namespace: openshift-sriov-network-operator
+spec:
+  resourceName: vuy_sriovnic
+  networkNamespace: sriov-testing
+  ipam: |-
+    {
+      "type": "host-local",
+      "subnet": "10.56.217.0/24",
+      "rangeStart": "10.56.217.171",
+      "rangeEnd": "10.56.217.181",
+      "gateway": "10.56.217.1"
+    }
+```
+```diff
++ oc create -f create-sriov-network.yaml 
+sriovnetwork.sriovnetwork.openshift.io/sriov-network created
+
++ oc get net-attach-def
+NAME             AGE
+sriov-network    11s
+```
 
 ##https://access.redhat.com/solutions/3875421
 
