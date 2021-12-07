@@ -367,7 +367,7 @@ items:
       totalvfs: 64
       vendor: "8086"
 ```
-### Create SriovNetworkNodePolicy CR,
+### Create SriovNetworkNodePolicy CR
 - Create Sriov Network Node Policy
 ```yaml
 apiVersion: sriovnetwork.openshift.io/v1
@@ -395,6 +395,22 @@ spec:
 
 **Note:** when I applied this first time, the worker node got reboot!
 
+- Checking worker node capability related to SRIOV
+
+```diff
+oc get no cnfdf06.ran.dfwt5g.lab -o json |jq -r '.status.allocatable'
+{
+  "cpu": "103500m",
+  "ephemeral-storage": "431110364061",
+  "hugepages-1Gi": "0",
+  "hugepages-2Mi": "0",
+  "management.workload.openshift.io/cores": "104k",
+  "memory": "96397884Ki",
+  "openshift.io/vuy_sriovnic": "6",
+  "pods": "250"
+}
+```
+
 ```diff
 + oc create sriov/sriov-nnp.yaml
 ```
@@ -411,19 +427,11 @@ spec:
 106: ens5f0v4: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
 107: ens5f0v5: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
 
-+ lspci|grep Virtual
-86:02.0 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
-86:02.1 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
-86:02.2 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
-86:02.3 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
-86:02.4 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
-86:02.5 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
 ```
 
 ### Creating test pods
 
 - Creating Network Attach Definition
--
 ```yaml
 apiVersion: sriovnetwork.openshift.io/v1
 kind: SriovNetwork
@@ -450,13 +458,85 @@ sriovnetwork.sriovnetwork.openshift.io/sriov-network created
 NAME             AGE
 sriov-network    11s
 ```
+- Create test PODs
+```diff
++ oc create -f create-sriov-pod1.yaml 
+pod/sriovpod1 created
+
++ oc get po
+NAME        READY   STATUS    RESTARTS   AGE
+sriovpod1   1/1     Running   0          5s
+```
+```diff
++ oc exec -it sriovpod1 -- ip a
+3: eth0@if703: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default 
+    link/ether 0a:58:0a:80:00:f0 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.128.0.240/23 brd 10.128.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::812:ffff:fed6:2db0/64 scope link 
+       valid_lft forever preferred_lft forever
+99: net1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 8e:88:ad:15:73:96 brd ff:ff:ff:ff:ff:ff
+    inet 10.56.217.171/24 brd 10.56.217.255 scope global net1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::8c88:adff:fe15:7396/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+```diff
++ oc exec -it sriovpod1 -- env|grep PCI
+PCIDEVICE_OPENSHIFT_IO_VUY_SRIOVNIC=0000:86:02.0
+
++ oc exec -it sriovpod1 -- lspci|grep Virtual
+86:02.0 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.1 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.2 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.3 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.4 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+86:02.5 Ethernet controller: Intel Corporation Ethernet Virtual Function 700 Series (rev 02)
+```
+```diff
++ oc exec -it sriovpod2 -- ip a
+3: eth0@if705: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1450 qdisc noqueue state UP group default 
+    link/ether 0a:58:0a:80:00:f2 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 10.128.0.242/23 brd 10.128.1.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::1c09:aaff:fef4:62b7/64 scope link 
+       valid_lft forever preferred_lft forever
+90: net1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether f6:9f:34:f2:4b:f8 brd ff:ff:ff:ff:ff:ff
+    inet 10.56.217.172/24 brd 10.56.217.255 scope global net1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::f49f:34ff:fef2:4bf8/64 scope link 
+       valid_lft forever preferred_lft forever
+
++ oc exec -it sriovpod2 -- env|grep PCI
+PCIDEVICE_OPENSHIFT_IO_VUY_SRIOVNIC=0000:86:02.3
+```
+### Testing basic connectivity but it is not relevant since I have only worker node and ip addresses of two PODs are on same SNO.
+- get one of test POD container PID ID
+```diff
++ sudo crictl ps pods |grep sriovpod
+4782a4a9dd636       d6927021c8bbbd9c4cc71aeca51c4411325d3fa643ef0d0ce45f3d0ee15ef916  3 minutes ago  Running  sriovpod  0    4a8aeb1349ec5
+71cb0da2246f6       d6927021c8bbbd9c4cc71aeca51c4411325d3fa643ef0d0ce45f3d0ee15ef916  8 minutes ago  Running  sriovpod  0    09958fd4681e3
+
++ Pid=$(sudo crictl inspect --output go-template --template '{{.info.pid}}' 4782a4a9dd636)
+2933371
+```
+- Using nsenter to PING other POD IP
+```diff
++ sudo nsenter -t $Pid -n -- ping -I net1 10.56.217.171
+PING 10.56.217.171 (10.56.217.171) from 10.56.217.172 net1: 56(84) bytes of data.
+64 bytes from 10.56.217.171: icmp_seq=1 ttl=64 time=0.054 ms
+64 bytes from 10.56.217.171: icmp_seq=2 ttl=64 time=0.136 ms
+```
+
+**Note:** Performance Profile I could not update the realTimeKernel and CPU Isolated works!!! Still fighting for it.
+
+**Useful Links:**
 
 ##https://access.redhat.com/solutions/3875421
-
 ##https://docs.openshift.com/container-platform/4.7/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html
-
 ##https://access.redhat.com/documentation/en-us/openshift_container_platform/4.9/html/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes
-
 ##https://infohub.delltechnologies.com/l/deployment-guide-dell-technologies-red-hat-openshift-reference-architecture-for-telecom-1/performance-profile-deployment-for-low-latency-3
 
 ## License
