@@ -1,0 +1,30 @@
+apiVersion: performance.openshift.io/v2
+kind: PerformanceProfile
+metadata:
+  name: worker-cnf
+spec:
+  additionalKernelArgs:
+  - nohz_full=26-51,78-103
+  - rcupdate.rcu_normal_after_boot=0
+  - idle=poll
+  cpu:
+    isolated: 26-51,78-103
+    reserved: 0-25,52-77
+  globallyDisableIrqLoadBalancing: true
+  hugepages:
+    defaultHugepagesSize: 1G
+    pages:
+    - count: 0
+      node: 0
+      size: 1G
+    - count: 0
+      node: 1
+      size: 1G
+  machineConfigPoolSelector:
+       machineconfiguration.openshift.io/role: worker-cnf
+  nodeSelector:
+    node-role.kubernetes.io/worker-cnf: ""
+  #numa:
+  #  topologyPolicy: single-numa-node
+  realTimeKernel:
+    enabled: true
