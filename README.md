@@ -512,7 +512,7 @@ PCIDEVICE_OPENSHIFT_IO_VUY_SRIOVNIC=0000:86:02.0
 + oc exec -it sriovpod2 -- env|grep PCI
 PCIDEVICE_OPENSHIFT_IO_VUY_SRIOVNIC=0000:86:02.3
 ```
-### Testing basic connectivity but it is not relevant since I have only worker node and ip addresses of two PODs are on same SNO.
+### Testing basic connectivity but it is not relevant since I have only one worker node and ip addresses of two PODs are on same SNO.
 - get one of test POD container PID ID
 ```diff
 + sudo crictl ps pods |grep sriovpod
