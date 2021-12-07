@@ -534,12 +534,12 @@ PING 10.56.217.171 (10.56.217.171) from 10.56.217.172 net1: 56(84) bytes of data
 
 **Useful Links:**
 
-##https://access.redhat.com/solutions/3875421
+https://access.redhat.com/solutions/3875421
 
-##https://docs.openshift.com/container-platform/4.7/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html
+https://docs.openshift.com/container-platform/4.7/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes.html
 
-##https://access.redhat.com/documentation/en-us/openshift_container_platform/4.9/html/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes
+https://access.redhat.com/documentation/en-us/openshift_container_platform/4.9/html/scalability_and_performance/cnf-performance-addon-operator-for-low-latency-nodes
 
-##https://infohub.delltechnologies.com/l/deployment-guide-dell-technologies-red-hat-openshift-reference-architecture-for-telecom-1/performance-profile-deployment-for-low-latency-3
+https://infohub.delltechnologies.com/l/deployment-guide-dell-technologies-red-hat-openshift-reference-architecture-for-telecom-1/performance-profile-deployment-for-low-latency-3
 
 ## License
