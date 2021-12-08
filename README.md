@@ -398,6 +398,9 @@ spec:
 - Checking worker node capability related to SRIOV
 
 ```diff
++ oc create sriov/sriov-nnp.yaml
+```
+```diff
 oc get no cnfdf06.ran.dfwt5g.lab -o json |jq -r '.status.allocatable'
 {
   "cpu": "103500m",
@@ -410,11 +413,6 @@ oc get no cnfdf06.ran.dfwt5g.lab -o json |jq -r '.status.allocatable'
   "pods": "250"
 }
 ```
-
-```diff
-+ oc create sriov/sriov-nnp.yaml
-```
-
 - Check SRIOV VF
 ```diff
 + ip a l|grep ens
@@ -430,6 +428,10 @@ oc get no cnfdf06.ran.dfwt5g.lab -o json |jq -r '.status.allocatable'
 ```
 
 ### Creating test pods
+- Create namespace or project for SRIOV testing pods
+```diff
+oc create ns sriov-testing
+```
 
 - Creating Network Attach Definition
 ```yaml
