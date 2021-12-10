@@ -252,16 +252,7 @@ items:
     uid: 7d6d1903-380a-4769-aeda-7a4007f54fe0
   spec:
     dpConfigVersion: "2471659"
-    interfaces:
-    - linkType: eth
-      name: ens5f0
-      numVfs: 6
-      pciAddress: 0000:86:00.0
-      vfGroups:
-      - deviceType: netdevice
-        policyName: sriov-network-node-policy
-        resourceName: vuy_sriovnic
-        vfRange: 0-5
+
   status:
     interfaces:
     - deviceID: "1015"
