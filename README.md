@@ -23,7 +23,7 @@ lspci|grep Ether
 
 ### Get OpenShift Channel version 
 ```diff
-+ oc version -o yaml | grep openshiftVersion |grep -o '[0-9]*[.][0-9]*' | head -1)
++ oc version -o yaml | grep openshiftVersion |grep -o '[0-9]*[.][0-9]*' | head -1
 "4.9"
 ```
 ### Update pao/install.yml
