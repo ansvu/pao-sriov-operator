@@ -398,7 +398,7 @@ spec:
 - Checking worker node capability related to SRIOV
 
 ```diff
-+ oc create sriov/sriov-nnp.yaml
++ oc create -f sriov/sriov-nnp.yaml
 ```
 ```diff
 oc get no cnfdf06.ran.dfwt5g.lab -o json |jq -r '.status.allocatable'
