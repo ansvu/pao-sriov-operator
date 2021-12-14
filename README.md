@@ -189,7 +189,7 @@ spec:
 ```
 
 ```diff
-+ oc create -f sriov/install.yaml
++ oc create -f sriov/install.yml
 ```
 ```diff
 + oc get po -n openshift-sriov-network-operator
