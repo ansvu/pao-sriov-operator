@@ -533,6 +533,17 @@ PING 10.56.217.171 (10.56.217.171) from 10.56.217.172 net1: 56(84) bytes of data
 ```
 
 **Note:** Performance Profile I could not update the realTimeKernel and CPU Isolated works!!! Still fighting for it.
+          But it works with normal OpenShift cluster with multi-master and worker nodes. 
+          
+```diff
++ [core@worker0 ~]$ sudo cat /proc/cmdline
+BOOT_IMAGE=(hd0,gpt3)/ostree/rhcos-d4e4425aa2d5a3bc9de392cffa293dba5084d76c7be5b0edf28cd457be89050d/vmlinuz-4.18.0-305.25.1.rt7.97.el8_4.x86_64 random.trust_cpu=on console=tty0 console=ttyS0,115200n8 ignition.platform.id=metal ostree=/ostree/boot.1/rhcos/d4e4425aa2d5a3bc9de392cffa293dba5084d76c7be5b0edf28cd457be89050d/0 root=UUID=0d85b452-8f24-4a99-ad78-f3f620d48a84 rw rootflags=prjquota skew_tick=1 nohz=on rcu_nocbs=26-51 tuned.non_isolcpus=000000ff,ffffffff,fff00000,03ffffff intel_pstate=disable nosoftlockup tsc=nowatchdog intel_iommu=on iommu=pt isolcpus=managed_irq,26-51 systemd.cpu_affinity=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103 default_hugepagesz=1G nohz_full=26-51 rcupdate.rcu_normal_after_boot=0 idle=poll
+```
+```bash
++ worker0 ~]$ uname -a 
+Linux worker0.upitest.lab.eng.rdu2.redhat.com 4.18.0-305.25.1.rt7.97.el8_4.x86_64
+
+```
 
 **Useful Links:**
 
