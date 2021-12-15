@@ -86,8 +86,19 @@ The full list of attributes handled by the operator can be see [here](https://gi
 
 ## The setup goes as following
 
+**Note:** for NON-SNO cluster, please use master MCP that is already created and skip this MCP creation
+```diff
++ oc get mc
+50-performance-master
+
++ oc get mcp
+master   rendered-master-fb2e9e2d5bb26a745879cffb9c00053b   True      False      False      1              1                   1            
+```
+**Note:** for NON-SNO cluster, please skip this node label step
+
 Label the workers that need specific configuration. We will use the commonly used label worker-cnf as hard-coded on files then update role and labels from files accordingly. But you can label to any name e.g. worker-hiperf= 
 - label your worker node to worker-cnf=
+
 ```diff
 + oc label node your_worker node-role.kubernetes.io/worker-cnf='' --overwrite
 ```
@@ -120,7 +131,7 @@ spec:
 NAME         CONFIG                                                 UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
 worker-cnf   rendered-worker-cnf-06a415a499dedcb8755706edcfed1d9a   True      False      False      0              0                   0                     0                       2d23h
 ````
-- Create Performance Profile
+- Create Performance Profile for NON-SNO cluster
 ```yaml
 apiVersion: performance.openshift.io/v2
 kind: PerformanceProfile
@@ -153,8 +164,38 @@ spec:
     enabled: true
 ```
 ```diff
+
+```
+- Create Performance Profile for SNO cluster
+```yaml
+apiVersion: performance.openshift.io/v2
+kind: PerformanceProfile
+metadata:
+  name: master    
+spec:
+  cpu:
+    isolated: 0-8
+    reserved: 9-103
+  hugepages:
+    defaultHugepagesSize: "1G"
+    pages:
+    - size: "1G"
+      count: 16
+      node: 0
+  realTimeKernel:
+    enabled: true
+  nodeSelector:
+    node-role.kubernetes.io/master: ""
+    
 + oc create -f pao/pp.yaml
 ```
+**Observation on PP creation:**
+- if realTimeKernel is enabled, then node will reboot for this setup
+- if ISOLATE or other Hi-Perf parameters are defined, there is a second reboot after
+
+
+***Thanks to Jose for the info on Roles and pools***
+https://github.com/jgato/jgato/blob/main/random_docs/Openshift%20Operators.md#Roles-and-pools
 
 ## Installing the SR-IOV Network Operator Using CLI
 
@@ -532,9 +573,7 @@ PING 10.56.217.171 (10.56.217.171) from 10.56.217.172 net1: 56(84) bytes of data
 64 bytes from 10.56.217.171: icmp_seq=2 ttl=64 time=0.136 ms
 ```
 
-**Note:** Performance Profile I could not update the realTimeKernel and CPU Isolated works!!! Still fighting for it.
-          But it works with normal OpenShift cluster with multi-master and worker nodes. 
-          
+         
 ```diff
 + [core@worker0 ~]$ sudo cat /proc/cmdline
 BOOT_IMAGE=(hd0,gpt3)/ostree/rhcos-d4e4425aa2d5a3bc9de392cffa293dba5084d76c7be5b0edf28cd457be89050d/vmlinuz-4.18.0-305.25.1.rt7.97.el8_4.x86_64 random.trust_cpu=on console=tty0 console=ttyS0,115200n8 ignition.platform.id=metal ostree=/ostree/boot.1/rhcos/d4e4425aa2d5a3bc9de392cffa293dba5084d76c7be5b0edf28cd457be89050d/0 root=UUID=0d85b452-8f24-4a99-ad78-f3f620d48a84 rw rootflags=prjquota skew_tick=1 nohz=on rcu_nocbs=26-51 tuned.non_isolcpus=000000ff,ffffffff,fff00000,03ffffff intel_pstate=disable nosoftlockup tsc=nowatchdog intel_iommu=on iommu=pt isolcpus=managed_irq,26-51 systemd.cpu_affinity=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103 default_hugepagesz=1G nohz_full=26-51 rcupdate.rcu_normal_after_boot=0 idle=poll
@@ -545,6 +584,22 @@ Linux worker0.upitest.lab.eng.rdu2.redhat.com 4.18.0-305.25.1.rt7.97.el8_4.x86_6
 
 ```
 
+**SNO cluster:**
+```diff
++ oc get no cnfdf06.ran.dfwt5g.lab -o json |jq -r '.status.allocatable'
+{
+  "cpu": "9",
+  "ephemeral-storage": "467784684Ki",
+  "hugepages-1Gi": "16Gi",
+  "hugepages-2Mi": "0",
+  "management.workload.openshift.io/cores": "104k",
+  "memory": "79641972Ki",
+  "openshift.io/vuy_sriovnic": "6",
+  "pods": "250"
+}
++ [core@cnfdf06 ~]$ cat /proc/cmdline 
+BOOT_IMAGE=(hd0,gpt3)/ostree/rhcos-d4e4425aa2d5a3bc9de392cffa293dba5084d76c7be5b0edf28cd457be89050d/vmlinuz-4.18.0-305.25.1.rt7.97.el8_4.x86_64 random.trust_cpu=on console=tty0 console=ttyS0,115200n8 ignition.platform.id=metal ostree=/ostree/boot.0/rhcos/d4e4425aa2d5a3bc9de392cffa293dba5084d76c7be5b0edf28cd457be89050d/0 ip=eno1:dhcp root=UUID=8cb433b8-b5cf-4548-8ace-ac26a25084fd rw rootflags=prjquota intel_iommu=on iommu=pt skew_tick=1 nohz=on rcu_nocbs=0-8 tuned.non_isolcpus=000000ff,ffffffff,ffffffff,fffffe00 intel_pstate=disable nosoftlockup tsc=nowatchdog intel_iommu=on iommu=pt isolcpus=managed_irq,0-8 systemd.cpu_affinity=9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56
+```
 **Useful Links:**
 
 https://access.redhat.com/solutions/3875421
