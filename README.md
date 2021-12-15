@@ -86,7 +86,7 @@ The full list of attributes handled by the operator can be see [here](https://gi
 
 ## The setup goes as following
 
-**Note:** for NON-SNO cluster, please use master MCP that is already created and skip this MCP creation
+**Note:** for SNO cluster, please use master MCP that is already created and skip this MCP creation
 ```diff
 + oc get mc
 50-performance-master
